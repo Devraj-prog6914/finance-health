@@ -363,6 +363,10 @@ app.get('/api/msmes/:id/report', (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`[CreditPulse Server] running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`[CreditPulse Server] running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;

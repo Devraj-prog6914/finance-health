@@ -451,9 +451,17 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                         </p>
                         <div className="text-[9px] text-slate-400 flex justify-between items-center">
                           <span>{alert.time}</span>
-                          <span className="text-brand-green-600 dark:text-brand-green-400 font-semibold cursor-pointer hover:underline">
+                          <button
+                            onClick={() => {
+                              const matchingMsme = msmes.find(m => m.name === alert.msme_name);
+                              if (matchingMsme) {
+                                onSelectMSME(matchingMsme.id);
+                              }
+                            }}
+                            className="text-brand-green-600 dark:text-brand-green-400 font-bold hover:underline cursor-pointer"
+                          >
                             Inspect File &gt;
-                          </span>
+                          </button>
                         </div>
                       </div>
                     );
