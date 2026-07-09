@@ -84,21 +84,24 @@ export interface DatabaseState {
   rm_actions: RMAction[];
 }
 
-export const getDatabase = (): DatabaseState => {
-  let state: DatabaseState;
-  let needsSave = false;
+let memoryDbState: DatabaseState | null = null;
 
+export const getDatabase = (): DatabaseState => {
+  if (memoryDbState) {
+    return memoryDbState;
+  }
+
+  let state: DatabaseState;
   if (!fs.existsSync(DB_FILE)) {
+    console.log("[db.ts] db.json not found, seeding in-memory...");
     state = seedDatabase();
-    needsSave = true;
   } else {
     try {
       const raw = fs.readFileSync(DB_FILE, 'utf8');
       state = JSON.parse(raw);
     } catch (err) {
-      console.error("Error reading database, re-seeding: ", err);
+      console.error("[db.ts] Error reading database, seeding in-memory: ", err);
       state = seedDatabase();
-      needsSave = true;
     }
   }
 
@@ -111,18 +114,19 @@ export const getDatabase = (): DatabaseState => {
       state.explanations.push(explanation);
       state.recommendations.push(recommendation);
     });
-    needsSave = true;
   }
 
-  if (needsSave) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(state, null, 2));
-  }
-
-  return state;
+  memoryDbState = state;
+  return memoryDbState;
 };
 
 export const saveDatabase = (state: DatabaseState) => {
-  fs.writeFileSync(DB_FILE, JSON.stringify(state, null, 2));
+  memoryDbState = state;
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(state, null, 2));
+  } catch (err) {
+    console.warn("[db.ts] Warning: filesystem is read-only. Database changes stored in memory only:", err);
+  }
 };
 
 // Seed Logic: 25-30 Indian MSMEs with realistic patterns
